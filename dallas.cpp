@@ -84,9 +84,3 @@ void printData(DeviceAddress deviceAddress)
   Serial.println();
 }
 
-void loop(void)
-{ 
- //printData(insideThermometer);
-  //printData(outsideThermometer);
-}
-

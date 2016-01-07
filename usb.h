@@ -9,3 +9,5 @@ class ACMAsyncOper: public CDCAsyncOper{
     public:
     uint8_t OnInit(ACM *pacm);
 };
+
+String sendCommand(ACM *Acm, String command);
