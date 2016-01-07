@@ -13,35 +13,35 @@ void setupDallas(){
   // Start up the library
   sensors.begin();
   // locate devices on the bus
-  Serial.print("Locating devices...");
-  Serial.print("Found ");
-  Serial.print(sensors.getDeviceCount(), DEC);
-  Serial.println(" devices.");
+  //Serial.print("Locating devices...");
+  //Serial.print("Found ");
+  //Serial.print(sensors.getDeviceCount(), DEC);
+  //Serial.println(" devices.");
   // report parasite power requirements
-  Serial.print("Parasite power is: "); 
+  //Serial.print("Parasite power is: "); 
   if (sensors.isParasitePowerMode()) Serial.println("ON");
   else Serial.println("OFF");
   for(uint8_t i = 0; i < THERMOMETERS; ++i){
       if(!sensors.getAddress(thermometer[i], i)){
-          Serial.print("Unable to find address for Device ");
-          Serial.println(i, DEC);
+          //Serial.print("Unable to find address for Device ");
+          //Serial.println(i, DEC);
       }
   }
   // show the addresses we found on the bus
   for(uint8_t i = 0; i < THERMOMETERS; ++i){
-      Serial.print("Device ");
-      Serial.print(i, DEC);
-      Serial.print(" Address: ");
-      printAddress(thermometer[i]);
-      Serial.println();
+      //Serial.print("Device ");
+      //Serial.print(i, DEC);
+      //Serial.print(" Address: ");
+      //printAddress(thermometer[i]);
+      //Serial.println();
   }
   for(uint8_t i = 0; i < THERMOMETERS; ++i){
       sensors.setResolution(thermometer[i], TEMPERATURE_PRECISION);
-      Serial.print("Device ");
-      Serial.print(i, DEC);
-      Serial.print(" Resolution: ");
-      Serial.print(sensors.getResolution(thermometer[i]), DEC); 
-      Serial.println();
+      //Serial.print("Device ");
+      //Serial.print(i, DEC);
+      //Serial.print(" Resolution: ");
+      //Serial.print(sensors.getResolution(thermometer[i]), DEC); 
+      //Serial.println();
   }
 }
 
@@ -52,7 +52,7 @@ void printAddress(DeviceAddress deviceAddress)
   {
     // zero pad the address if necessary
     if (deviceAddress[i] < 16) Serial.print("0");
-    Serial.print(deviceAddress[i], HEX);
+    //Serial.print(deviceAddress[i], HEX);
   }
 }
 
@@ -60,27 +60,27 @@ void printAddress(DeviceAddress deviceAddress)
 void printTemperature(DeviceAddress deviceAddress)
 {
   float tempC = sensors.getTempC(deviceAddress);
-  Serial.print("Temp C: ");
-  Serial.print(tempC);
-  Serial.print(" Temp F: ");
-  Serial.print(DallasTemperature::toFahrenheit(tempC));
+  //Serial.print("Temp C: ");
+  //Serial.print(tempC);
+  //Serial.print(" Temp F: ");
+  //Serial.print(DallasTemperature::toFahrenheit(tempC));
 }
 
 // function to print a device's resolution
 void printResolution(DeviceAddress deviceAddress)
 {
-  Serial.print("Resolution: ");
-  Serial.print(sensors.getResolution(deviceAddress));
-  Serial.println();    
+  //Serial.print("Resolution: ");
+  //Serial.print(sensors.getResolution(deviceAddress));
+  //Serial.println();    
 }
 
 // main function to print information about a device
 void printData(DeviceAddress deviceAddress)
 {
-  Serial.print("Device Address: ");
+  //Serial.print("Device Address: ");
   printAddress(deviceAddress);
-  Serial.print(" ");
+  //Serial.print(" ");
   printTemperature(deviceAddress);
-  Serial.println();
+  //Serial.println();
 }
 
