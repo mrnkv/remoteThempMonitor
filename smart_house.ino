@@ -1,3 +1,6 @@
+#include <string.h>
+#include <stdlib.h>
+
 #include <cdcacm.h>
 #include <usbhub.h>
 #include <QueueList.h>
@@ -55,10 +58,6 @@ LiquidCrystal lcd(3, 4, 5, 6, 7, 8);
 extern OneWire oneWire;
 extern DallasTemperature sensors;
 extern DeviceAddress thermometer[THERMOMETERS];
-String objects[THERMOMETERS] = {"Kitchn", 
-                                "Boiler", 
-                                "  Room"};
-String objectThemp[THERMOMETERS];
 
 struct usbString{
     char str[128];
@@ -69,7 +68,15 @@ usbString s_in, s_out;
 bool commandComplete;
 QueueList<String> commandQueue;
 String cmds[] = {"AT+CCLK?\r", "AT+CMGL=\"ALL\"\r"};
-String smsText;
+char smsCommandText[] = "AT+CMGW=\"+7920XXXXXXX\"\rKitchen XXXX; Boiler XXXX; Room XXXX\x1A\x00";
+const uint8_t PH_BEGIN = 9;// phone position
+const uint8_t K_BEGIN = 31; //positions of XXXX
+const uint8_t B_BEGIN = 44;
+const uint8_t R_BEGIN = 55;
+char ktchnStr[] = "Kitchen XXXX\x00";
+char blrStr[] =   "Boiler  XXXX\x00";
+char roomStr[] =  "Room    XXXX\x00";
+const uint8_t T_BEGIN = 8; //positions of XXXX
 
 void selectCommand(){
     static uint16_t commandCounter = 0;
@@ -120,9 +127,8 @@ void handleString(String s){
         //delete sms from phone
         //Send sms command series
         commandQueue.push("AT+CMGF=1\r");
-        String smsString = "AT+CMGW=\"" + phoneNum+"\"\r" + "Hello from dacha ";
-        smsString.setCharAt(smsString.length()-1, 26);
-        commandQueue.push(smsString);
+        memmove(smsCommandText + PH_BEGIN, phoneNum.c_str(), 12);
+        commandQueue.push(smsCommandText);
         commandQueue.push("AT+CMGD="+smsNum+"\r");
     }
     else{
@@ -137,15 +143,13 @@ void handleString(String s){
                                              
 }
 
-
-
-
 void setup()
 {
     Serial.begin( 115200 );
     setupDallas();
     lcd.begin(16, 2);
     commandComplete = true;
+
 #if !defined(__MIPSEL__)
   while (!Serial); // Wait for serial port to connect - used on Leonardo, Teensy and other boards with built-in USB CDC serial connection
 #endif
@@ -224,28 +228,39 @@ void loop()
     }//if( Usb.getUsbTaskState() == USB_STATE_RUNNING..    
     
     //request themperatures
-    /*
+    
     if(loopCounter == 100){
         loopCounter = 0;
         sensors.requestTemperatures();
-        //Serial.print("THEM = "); Serial.println(thempNumber, DEC);
         float themp = sensors.getTempC(thermometer[thempNumber]);
-        objectThemp[thempNumber] = String(themp);
-        String res = objects[thempNumber]+" "+String(themp) + " C";
-        lcd.setCursor(0,1);
-        lcd.print(res);
+        String strThemp = String(themp);
+        switch(thempNumber){
+            case 0: //kitchen
+                memmove(smsCommandText + K_BEGIN, strThemp.c_str(), 4);
+                memmove(ktchnStr + T_BEGIN, strThemp.c_str(), 4);
+                lcd.setCursor(0,1);
+                lcd.print(ktchnStr);
+            break;
+            case 1: //boyler
+                memmove(smsCommandText + B_BEGIN, strThemp.c_str(), 4);
+                memmove(blrStr + T_BEGIN, strThemp.c_str(), 4);
+                lcd.setCursor(0,1);
+                lcd.print(blrStr);
+            break;
+            case 2: //room
+                memmove(smsCommandText + R_BEGIN, strThemp.c_str(),  4);
+                memmove(roomStr + T_BEGIN, strThemp.c_str(), 4);
+            break;
+            default:
+            break;
+        }
         thempNumber++;
         if(thempNumber == THERMOMETERS) thempNumber = 0;
-        smsText = ""; 
-        for(uint8_t i = 0; i < THERMOMETERS; ++i){
-            smsText += objects[i] +":"+objectThemp[i]+"; ";
-        }
-        //Serial.println(smsText);
+        Serial.println(smsCommandText);
         delay(1000);
     }
 
     loopCounter++;
-    */
 }
 
 
