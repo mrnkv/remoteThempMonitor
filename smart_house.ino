@@ -55,9 +55,6 @@ ACM           Acm(&Usb, &AsyncOper);
 
 LiquidCrystal lcd(3, 4, 5, 6, 7, 8);
 
-extern OneWire oneWire;
-extern DallasTemperature sensors;
-extern DeviceAddress thermometer[THERMOMETERS];
 
 struct usbString{
     char str[128];
@@ -84,14 +81,15 @@ void selectCommand(){
         cmds[commandCounter].toCharArray(s_in.str, cmds[commandCounter].length()+1);
         s_in.counter = 0;
         s_out.counter = 0;
- //       Serial.println("Command " + cmds[commandCounter] + " selected");
+        //Serial.println("\t\tCommand " + cmds[commandCounter] + " selected");
         commandCounter++;
         if (commandCounter == 2) commandCounter = 0;
     }
     else{
         String s = commandQueue.pop();
- //       Serial.print("from QUEUE");
- //       Serial.println(s);
+        //Serial.println("\t\tfrom QUEUE");
+        //Serial.print("\t\tcommands: "); Serial.println(commandQueue.count());
+        //Serial.println("\t\t c= ");
         s.toCharArray(s_in.str, s.length()+1);
         s_in.counter = 0;
         s_out.counter = 0;
@@ -106,10 +104,10 @@ void handleString(String s){
     //is it time answer?
     char result = ms.Match("%d+/%d+/%d+,%d+:%d+:%d+", 0);   
     if(result == REGEXP_MATCHED){
-    //    Serial.println("Time Matched");
+        //Serial.println("Time Matched");
 
         String time = ms.GetMatch(buf);
-    //    Serial.println(time);
+        //Serial.println(time);
         lcd.setCursor(0,0);
         lcd.print(time);
     }
@@ -129,6 +127,8 @@ void handleString(String s){
         commandQueue.push("AT+CMGF=1\r");
         memmove(smsCommandText + PH_BEGIN, phoneNum.c_str(), 12);
         commandQueue.push(smsCommandText);
+        //Serial.print("Command Pushed :");
+        //Serial.println(smsCommandText);
         commandQueue.push("AT+CMGD="+smsNum+"\r");
     }
     else{
@@ -177,7 +177,7 @@ void loop()
 
     if( Acm.isReady()) {
        uint8_t rcode;
-       /* reading the keyboard */
+       /* reading the cellphone */
        if(s_in.str[s_in.counter] != 0) {
          uint8_t data= s_in.str[s_in.counter];
          /* sending to the phone */
@@ -185,7 +185,7 @@ void loop()
          if (rcode)
             ErrorMessage<uint8_t>(PSTR("SndData"), rcode);
          s_in.counter++;
-       }//if(Serial.available()...
+       }
 
        delay(50);
 
@@ -212,12 +212,13 @@ void loop()
                         }
                     }
                     result.trim();
-                    Serial.println(result);
+                    //Serial.println(result);
                     if(result == "OK") {
                         commandComplete = true;
-     //                   Serial.println("command complete");
+                        //Serial.println("command complete");
                     }
                     else{
+                        //Serial.println("command not completed");
                         handleString(result);
                     }
                     s_out.counter = 0;
@@ -250,13 +251,15 @@ void loop()
             case 2: //room
                 memmove(smsCommandText + R_BEGIN, strThemp.c_str(),  4);
                 memmove(roomStr + T_BEGIN, strThemp.c_str(), 4);
+                lcd.setCursor(0,1);
+                lcd.print(roomStr);
             break;
             default:
             break;
         }
         thempNumber++;
         if(thempNumber == THERMOMETERS) thempNumber = 0;
-        Serial.println(smsCommandText);
+        //Serial.println(smsCommandText);
         delay(1000);
     }
 
